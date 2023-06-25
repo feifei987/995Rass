@@ -1,0 +1,38 @@
+# Output Summary Script For RASS When Coupled With Gaussian09
+# Author: W. C. McKee
+
+import re, sys
+
+
+def main():
+
+    jobs_searched = int(sys.argv[1])
+    jobs_run = 0
+    jobs_converged = 0
+    converged_list = []
+
+    print "Summary of Output Files Checked"
+    print"************************************************************\n"
+
+    for i in range(1, jobs_searched + 1):
+        try:
+            read_in = open(str(i) + '.RASS.out', 'r')
+            output = ''.join([lines for lines in read_in])
+            output = output.replace('\n', '').replace(' ', '')
+
+            if re.search('HF=(-?\d+.\d+)', output) is not None:
+                termination_status = ' Converged: E = '
+                energy = re.search('HF=(-?\d+.\d+)', output)
+                print str(i) + termination_status + energy.group(1)
+                jobs_run = jobs_run + 1
+                jobs_converged = jobs_converged + 1
+                converged_list.append([i, float(energy.group(1))])
+            else:
+                termination_status = ' Failed'
+                print str(i) + termination_status
+                jobs_run = jobs_run + 1
+
+        except IOError:
+            print str(i) + ' No Output'
+
+        i = i + 1
